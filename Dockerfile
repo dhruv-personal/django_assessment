@@ -12,10 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e .[dev]
-
 COPY . .
+
+RUN pip install --no-cache-dir .[dev]
 
 RUN mkdir -p /app/logs && chmod +x /app/entrypoint.sh
 

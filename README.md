@@ -82,45 +82,88 @@ This platform enables two types of users:
    cd django_assessment
   ```
 2. **Configure environment variables**
-  ```bash
+   ```bash
    cp .env.example .env
-   # Edit .env with your configuration (see Environment Variables section)
-  ```
+   ```
+   
+   **For Docker setup**, the `.env` file should use Docker service names:
+   ```env
+   DATABASE_HOST=db
+   REDIS_URL=redis://redis:6379/0
+   CELERY_BROKER_URL=redis://redis:6379/0
+   ```
+   
+   **Note:** The `.env.example` file is already configured for Docker. Just copy it and update the passwords if needed.
 3. **Start all services with one command**
-  ```bash
+   ```bash
    ./start.sh
-  ```
+   ```
+   
    Or manually:
+   ```bash
+   docker-compose up --build
+   ```
+   
    This will start:
-  - PostgreSQL database (port 5432)
-  - Redis (port 6379)
-  - Django web server (port 8000)
-  - Celery worker
-  - Celery beat scheduler
-4. **Access the application**
-  - API: [http://localhost:8000](http://localhost:8000)
-  - Admin panel: [http://localhost:8000/admin](http://localhost:8000/admin)
-5. **Create a superuser (optional)**
-  ```bash
+   - PostgreSQL database (port 5433 on host, 5432 in container)
+   - Redis (port 6379)
+   - Django web server (port 8000)
+   - Celery worker
+   - Celery beat scheduler
+
+4. **Setup PostgreSQL database (if needed)**
+   
+   If the database doesn't exist or you need to create it manually:
+   
+   ```bash
+   # Access PostgreSQL container
+   docker-compose exec db psql -U postgres
+   
+   # Inside PostgreSQL shell, create database and user
+   CREATE DATABASE events_db;
+   CREATE USER postgres WITH PASSWORD '123456';
+   GRANT ALL PRIVILEGES ON DATABASE events_db TO postgres;
+   
+   # Exit PostgreSQL shell
+   \q
+   ```
+   
+   **Note:** The credentials should match those in your `.env` file:
+   - `DATABASE_NAME=events_db`
+   - `DATABASE_USER=postgres`
+   - `DATABASE_PASSWORD=123456`
+
+5. **Run database migrations**
+   ```bash
+   docker-compose exec web python manage.py migrate
+   ```
+
+6. **Access the application**
+   - API: [http://localhost:8000](http://localhost:8000)
+   - Admin panel: [http://localhost:8000/admin](http://localhost:8000/admin)
+
+7. **Create a superuser (optional)**
+   ```bash
    docker-compose exec web python manage.py createsuperuser
-  ```
-6. **Useful Docker commands**
-  ```bash
+   ```
+
+8. **Useful Docker commands**
+   ```bash
    # View logs
    docker-compose logs -f web
-
+   
    # Run tests
    docker-compose exec web pytest
-
+   
    # Django shell
    docker-compose exec web python manage.py shell
-
+   
    # Stop services
    docker-compose down
-
+   
    # Stop and remove volumes (clean slate)
    docker-compose down -v
-  ```
+   ```
 
 ---
 
