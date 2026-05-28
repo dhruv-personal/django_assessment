@@ -1,0 +1,558 @@
+{
+  "info": {
+    "name": "Events Platform API",
+    "description": "Complete API collection for Events Platform with JWT authentication, role-based access control, and event management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "event_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Signup - Seeker",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains email\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"seeker@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"role\": \"SEEKER\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Register a new seeker user. OTP will be sent to email for verification."
+          },
+          "response": []
+        },
+        {
+          "name": "Signup - Facilitator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"facilitator@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"role\": \"FACILITATOR\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Register a new facilitator user"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Email verified successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.detail).to.include('verified');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"seeker@example.com\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-email",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-email"]
+            },
+            "description": "Verify email with OTP code received via email. Check console logs in Docker for OTP in development mode."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Response contains tokens\", function () {",
+                  "    pm.expect(jsonData).to.have.property('access');",
+                  "    pm.expect(jsonData).to.have.property('refresh');",
+                  "});",
+                  "",
+                  "// Save tokens to collection variables",
+                  "if (jsonData.access) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.access);",
+                  "}",
+                  "if (jsonData.refresh) {",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"seeker@example.com\",\n    \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with email and password. Returns JWT access and refresh tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.access);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Refresh access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"seeker@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/resend-otp",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "resend-otp"]
+            },
+            "description": "Resend OTP to email address"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Events - Seeker",
+      "item": [
+        {
+          "name": "Search Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events/search/?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["events", "search", ""],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "location",
+                  "value": "New York",
+                  "disabled": true
+                },
+                {
+                  "key": "language",
+                  "value": "English",
+                  "disabled": true
+                },
+                {
+                  "key": "starts_after",
+                  "value": "2026-05-29T00:00:00Z",
+                  "disabled": true
+                },
+                {
+                  "key": "starts_before",
+                  "value": "2026-06-30T23:59:59Z",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "workshop",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Search events with optional filters. Requires Seeker role."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Events - With Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events/search/?location=New York&language=English&q=Python",
+              "host": ["{{base_url}}"],
+              "path": ["events", "search", ""],
+              "query": [
+                {
+                  "key": "location",
+                  "value": "New York"
+                },
+                {
+                  "key": "language",
+                  "value": "English"
+                },
+                {
+                  "key": "q",
+                  "value": "Python"
+                }
+              ]
+            },
+            "description": "Example with multiple filters applied"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Enrollments - Seeker",
+      "item": [
+        {
+          "name": "Enroll in Event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"event\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/enrollments/",
+              "host": ["{{base_url}}"],
+              "path": ["enrollments", ""]
+            },
+            "description": "Enroll in an event. Replace event ID with actual event ID from search."
+          },
+          "response": []
+        },
+        {
+          "name": "List All Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/enrollments/",
+              "host": ["{{base_url}}"],
+              "path": ["enrollments", ""]
+            },
+            "description": "List all enrollments for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "List Past Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/enrollments/past/",
+              "host": ["{{base_url}}"],
+              "path": ["enrollments", "past", ""]
+            },
+            "description": "List enrollments for events that have already ended"
+          },
+          "response": []
+        },
+        {
+          "name": "List Upcoming Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/enrollments/upcoming/",
+              "host": ["{{base_url}}"],
+              "path": ["enrollments", "upcoming", ""]
+            },
+            "description": "List enrollments for events that haven't started yet"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Enrollment Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/enrollments/1/",
+              "host": ["{{base_url}}"],
+              "path": ["enrollments", "1", ""]
+            },
+            "description": "Get details of a specific enrollment"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Events - Facilitator",
+      "item": [
+        {
+          "name": "Create Event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('event_id', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Python Workshop for Beginners\",\n    \"description\": \"Learn Python programming from scratch. This workshop covers variables, functions, loops, and basic data structures.\",\n    \"language\": \"English\",\n    \"location\": \"New York, NY\",\n    \"starts_at\": \"2026-06-15T14:00:00Z\",\n    \"ends_at\": \"2026-06-15T17:00:00Z\",\n    \"capacity\": 30\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/facilitator/events/",
+              "host": ["{{base_url}}"],
+              "path": ["facilitator", "events", ""]
+            },
+            "description": "Create a new event. Requires Facilitator role."
+          },
+          "response": []
+        },
+        {
+          "name": "List My Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/facilitator/events/",
+              "host": ["{{base_url}}"],
+              "path": ["facilitator", "events", ""]
+            },
+            "description": "List all events created by current facilitator with enrollment statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Event Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/facilitator/events/{{event_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["facilitator", "events", "{{event_id}}", ""]
+            },
+            "description": "Get details of a specific event including total enrollments and available seats"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Event",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Advanced Python Workshop\",\n    \"capacity\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/facilitator/events/{{event_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["facilitator", "events", "{{event_id}}", ""]
+            },
+            "description": "Update event details. Only event creator can update."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Event",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/facilitator/events/{{event_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["facilitator", "events", "{{event_id}}", ""]
+            },
+            "description": "Delete event. Only event creator can delete."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
