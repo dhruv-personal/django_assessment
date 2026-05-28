@@ -14,28 +14,29 @@ authors = [
 ]
 
 dependencies = [
-    "Django>=5.0,<6.0",
-    "djangorestframework>=3.14",
-    "djangorestframework-simplejwt>=5.3",
-    "django-filter>=23.0",
-    "django-cors-headers>=4.3",
-    "psycopg2-binary>=2.9",
-    "celery>=5.3",
-    "redis>=5.0",
-    "django-celery-beat>=2.5",
-    "gunicorn>=21.0",
-    "python-dotenv>=1.0",
+    "Django==5.2.14",
+    "djangorestframework==3.17.1",
+    "djangorestframework-simplejwt==5.5.1",
+    "django-filter==25.2",
+    "django-cors-headers==4.9.0",
+    "psycopg2-binary==2.9.12",
+    "celery==5.6.3",
+    "redis==7.4.0",
+    "django-celery-beat==2.9.0",
+    "gunicorn==26.0.0",
+    "python-dotenv==1.2.2",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4",
-    "pytest-django>=4.5",
-    "pytest-cov>=4.1",
-    "factory-boy>=3.3",
-    "black>=23.0",
-    "isort>=5.12",
-    "pre-commit>=3.5",
+    "pytest==9.0.3",
+    "pytest-django==4.12.0",
+    "pytest-cov==7.1.0",
+    "factory-boy==3.3.3",
+    "black==26.5.1",
+    "isort==8.0.1",
+    "flake8==7.3.0",
+    "pre-commit==4.6.0",
 ]
 
 [tool.setuptools]
@@ -62,7 +63,7 @@ extend-exclude = '''
 
 [tool.isort]
 profile = "black"
-line_length = 100
+line_length = 120
 skip_glob = ["*/migrations/*", "*/static/*"]
 known_first_party = ["events_platform", "authentication", "events"]
 known_django = ["django"]
@@ -84,7 +85,6 @@ omit = [
     "*/test_*.py",
     "*/__pycache__/*",
     "*/venv/*",
-    "*/virtualenv/*",
 ]
 
 [tool.coverage.report]
